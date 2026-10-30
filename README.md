@@ -40,10 +40,10 @@ iOS 系统层面禁止第三方 App 读短信，所以自动收集走的是快�
 
 ## 运行环境
 
-- **iOS 16.0 或更高**
+- **iOS 16.0 或更高**（已在 **iOS 16.3.1** 上确认兼容）
 - 通过 **TrollStore** 安装（无需 7 天续签，永久有效）
 
-TrollStore 支持 iOS 14.0–16.6.1（arm64e 机型，即 iPhone XS/XR 及以后）。如果系统低于 iOS 16，看下面[降级到 iOS 15](#降级到-ios-15)。
+TrollStore 支持 iOS 14.0–16.6.1，但 iOS 16.x 仅限 arm64e 机型（iPhone XS / XR 及以后，A12 以上）。低于 iOS 16 的话看下面[降级到 iOS 15](#降级到-ios-15)。
 
 ---
 
@@ -51,11 +51,34 @@ TrollStore 支持 iOS 14.0–16.6.1（arm64e 机型，即 iPhone XS/XR 及以后
 
 代码在 GitHub 上由 macOS runner 自动编译，产出一个未签名的 `.ipa`，TrollStore 会自己处理签名。
 
+### 方式一：一键脚本（Windows 推荐）
+
+装一次 GitHub CLI：
+
+```powershell
+winget install --id GitHub.cli
+gh auth login
+```
+
+然后在本项目目录下：
+
+```powershell
+.\Scripts\build.ps1
+```
+
+它会自动推送本地改动、触发构建、等结果，把 `PickupCode.ipa` 放到 `.\dist\`。
+
+### 方式二：网页操作
+
 1. 把仓库推到 GitHub，进入仓库页面的 **Actions** 标签
 2. 等 `build-ipa` 跑完（首次约 3–5 分钟），展开 **Upload ipa artifact** 下载 `PickupCode-ipa`
-3. 把 ipa 传到 iPhone：AirDrop、隔空投送、或者 iCloud Drive、微信文件传输助手都行
-4. 在文件里点这个 ipa，选择**用 TrollStore 打开**
-5. 回到 TrollStore 点 **Install**，桌面出现图标即完成
+3. 解压得到 `PickupCode.ipa`
+
+### 装到手机
+
+4. 把 ipa 传到 iPhone：AirDrop、隔空投送、或者 iCloud Drive、微信文件传输助手都行
+5. 在文件里点这个 ipa，选择**用 TrollStore 打开**
+6. 回到 TrollStore 点 **Install**，桌面出现图标即完成
 
 装好后打开一次 App——这一步是必须的，iOS 需要 App 至少运行过一次，快捷指令的操作列表里才会出现「保存取件码」。
 
@@ -68,6 +91,24 @@ rm -rf Payload/PickupCode.app/_CodeSignature
 rm -f Payload/PickupCode.app/embedded.mobileprovision
 # 重新 zip
 ```
+
+---
+
+## 关于「在 Windows 上编译 iOS」
+
+**结论：原生编译做不到。** iOS SDK 只随 Xcode 发布，而 Xcode 只运行在 macOS 上，Apple 的许可协议也禁止在非 Apple 硬件上运行 macOS。Swift 虽有 Windows 工具链，但链接不了 iOS SDK，也拿不到 UIKit / SwiftUI 的 iOS 后端。`theos` 面向越狱开发，同样需要 macOS。
+
+所以现实只有两条路：把编译放到有 macOS 的地方，或者自己有一台 Mac。
+
+| 方案 | 成本 | 适合场景 |
+|---|---|---|
+| **GitHub Actions**（本方案） | 公开仓库免费无限；私有仓库 2000 分钟/月，macOS 按 10 倍计费 → 约 40–50 次构建/月 | 自用 App、偶尔改改，完全够 |
+| Codemagic / Bitrise | 有免费额度，超出后付费 | 想换 CI 或要可视化构建日志 |
+| 云 Mac 租用（MacinCloud、AWS EC2 Mac） | $30–80/月，EC2 Mac 按小时但最短租 24 小时 | 需要 Xcode GUI 调界面、跑模拟器 |
+| 二手 Mac mini M1/M2 | 2000–3500 元一次性 | 长期做 iOS 开发，唯一真正省心的路 |
+| 黑苹果 / 虚拟机跑 macOS | 免费 | 违反 Apple 许可、硬件兼容性差、现代 CPU 基本无解，不作为工作流 |
+
+> 想免费用满 GitHub Actions，把仓库设为 **public** 即可，macOS runner 不计分钟数。
 
 ---
 
