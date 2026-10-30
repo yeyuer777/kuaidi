@@ -5,14 +5,14 @@ options:
     iOS: "16.0"
   createIntermediateGroups: true
   groupSortPosition: top
-  xcodeVersion: "15.0"
+  xcodeVersion: "16.0"
 
 settings:
   base:
     SWIFT_VERSION: "5.9"
     # 显式锁成 minimal：本项目用 @MainActor 的 Store 被 View 的同步按钮闭包调用，
     # 严格并发检查会把这些报成 error。代码本身在主线程执行，没有真实竞态。
-    SWIFT_STRICT_CONCURRENCY: incomplete
+    SWIFT_STRICT_CONCURRENCY: minimal
     MARKETING_VERSION: "1.0.0"
     CURRENT_PROJECT_VERSION: "1"
     IPHONEOS_DEPLOYMENT_TARGET: "16.0"

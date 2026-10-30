@@ -9,7 +9,10 @@ on:
 
 jobs:
   build:
-    runs-on: macos-14
+    # macos-15 默认 Xcode 16.4：能直接打开 XcodeGen 生成的 77 格式工程
+    # macos-14 默认只有 Xcode 15.4（打不开 77 格式），且该镜像已于
+    # 2026-07-06 开始弃用、2026-11-02 起完全停止支持
+    runs-on: macos-15
     timeout-minutes: 30
 
     steps:

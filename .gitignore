@@ -1,5 +1,6 @@
 # XcodeGen 生成的工程文件，CI 和本地都会重新生成
 *.xcodeproj
+PickupCode/Info.plist
 build/
 DerivedData/
 xcuserdata/
