@@ -1,0 +1,7 @@
+# 统一用 LF：工程要交给 macOS runner 编译，避免行尾差异带来的噪音
+* text=auto eol=lf
+
+# 二进制资源不做行尾转换
+*.png binary
+*.jpg binary
+*.jpeg binary

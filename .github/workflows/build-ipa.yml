@@ -1,0 +1,69 @@
+name: build-ipa
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: List schemes
+        run: xcodebuild -list -project PickupCode.xcodeproj
+
+      # 规则库是解析准确率的唯一保证，编译前先跑回归，别让改动悄悄破坏识别
+      - name: Verify parser rules
+        run: python3 Scripts/verify_rules.py
+
+      - name: Build release archive
+        run: |
+          set -euo pipefail
+          rm -rf build
+          mkdir -p build
+          xcodebuild \
+            -project PickupCode.xcodeproj \
+            -scheme PickupCode \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/PickupCode.xcarchive \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            clean archive
+
+      - name: Package unsigned ipa
+        run: |
+          set -euo pipefail
+          mkdir -p build/Payload
+          cp -R build/PickupCode.xcarchive/Products/Applications/PickupCode.app build/Payload/
+          cd build
+          zip -qry PickupCode.ipa Payload
+          rm -rf Payload PickupCode.xcarchive
+          ls -lh PickupCode.ipa
+          unzip -l PickupCode.ipa | head -20
+
+      - name: Upload ipa artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PickupCode-ipa
+          path: build/PickupCode.ipa
+          if-no-files-found: error
+          retention-days: 30
