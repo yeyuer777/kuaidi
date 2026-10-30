@@ -10,7 +10,7 @@ struct SavePickupTextIntent: AppIntent {
 
     static var title: LocalizedStringResource { "保存取件码" }
 
-    static var description: IntentDescription? {
+    static var description: IntentDescription {
         IntentDescription("从短信正文中提取取件码、驿站、地址并保存到取件码本。")
     }
 
